@@ -1,6 +1,7 @@
 package com.app.secanalyst.ui.screens
 
 import android.content.Intent
+import android.os.SystemClock
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,21 +13,50 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.app.secanalyst.IpDetailActivity
+import com.app.secanalyst.ui.activity.IpDetailActivity
+import com.app.secanalyst.model.DeviceInfoCardPreview
 import com.app.secanalyst.model.PreviewModel
 import com.app.secanalyst.model.switch.HomeCardSwitch
+import com.app.secanalyst.repository.DeviceInfoRepository
 import com.app.secanalyst.ui.compoment.DeviceInfoCard
 import com.app.secanalyst.ui.compoment.getDeviceInfoCardIcon
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen() {
     val context = LocalContext.current
     val ipInfo = PreviewModel.getIpInfoPreview()
-    val previewCards = PreviewModel.getDeviceInfoPreviewCards().filter { HomeCardSwitch.isEnabled(it.id) }
+    val repository = remember(context) { DeviceInfoRepository(context.applicationContext) }
+    val scope = rememberCoroutineScope()
+
+    val cardOrder = listOf("basic", "screen", "network", "memory", "storage", "battery")
+    val cardMap = remember { mutableStateMapOf<String, DeviceInfoCardPreview>() }
+
+    var uptime by remember { mutableStateOf(formatUptime(SystemClock.elapsedRealtime())) }
+
+    LaunchedEffect(Unit) {
+        val all = repository.refreshAll()
+        cardMap.putAll(all)
+    }
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(1000L)
+            uptime = formatUptime(SystemClock.elapsedRealtime())
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -53,14 +83,34 @@ fun HomeScreen() {
                     onRefresh = {}
                 )
             }
-            previewCards.forEach { preview ->
+            cardOrder.filter { HomeCardSwitch.isEnabled(it) }.forEach { id ->
+                val card = cardMap[id] ?: return@forEach
+                val items = if (id == "basic") {
+                    card.items.map { (k, v) ->
+                        if (k == "开机时间") k to uptime else k to v
+                    }
+                } else {
+                    card.items
+                }
                 DeviceInfoCard(
-                    title = preview.title,
-                    icon = getDeviceInfoCardIcon(preview.id),
-                    items = preview.items,
-                    onRefresh = {}
+                    title = card.title,
+                    icon = getDeviceInfoCardIcon(id),
+                    items = items,
+                    onRefresh = {
+                        scope.launch {
+                            repository.refreshCard(id)?.let { cardMap[id] = it }
+                        }
+                    }
                 )
             }
         }
     }
+}
+
+private fun formatUptime(millis: Long): String {
+    val seconds = millis / 1000
+    val h = seconds / 3600
+    val m = (seconds % 3600) / 60
+    val s = seconds % 60
+    return String.format("%02d:%02d:%02d", h, m, s)
 }

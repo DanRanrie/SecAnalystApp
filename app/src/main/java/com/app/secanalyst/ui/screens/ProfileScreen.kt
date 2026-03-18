@@ -28,7 +28,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.app.secanalyst.ThemeColorActivity
+import com.app.secanalyst.ui.activity.ThemeColorActivity
 import com.app.secanalyst.ui.compoment.SettingsCard
 import com.app.secanalyst.ui.compoment.SettingsSectionTitle
 import com.app.secanalyst.ui.dialog.HomeCardSwitchDialog

@@ -1,5 +1,7 @@
 package com.app.secanalyst.ui.screens
 
+import android.content.Context
+import android.content.Intent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -21,7 +23,14 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.app.secanalyst.ui.activity.AppUsageActivity
+import com.app.secanalyst.ui.activity.DataPlanActivity
+import com.app.secanalyst.ui.activity.DeviceInfoActivity
+import com.app.secanalyst.ui.activity.NetworkDiagnosisActivity
+import com.app.secanalyst.ui.activity.TrafficMonitorActivity
+import com.app.secanalyst.ui.activity.WifiScanActivity
 import com.app.secanalyst.model.PreviewModel
 import com.app.secanalyst.model.switch.ToolboxModuleSwitch
 import com.app.secanalyst.ui.compoment.ToolboxCard
@@ -29,6 +38,7 @@ import com.app.secanalyst.ui.compoment.ToolboxCard
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FavoritesScreen() {
+    val context = LocalContext.current
     val items = PreviewModel.getToolboxItems().filter { isToolboxItemEnabled(it.id) }
 
     Scaffold(
@@ -51,7 +61,7 @@ fun FavoritesScreen() {
                     icon = getToolboxIcon(item.id),
                     title = item.title,
                     subtitle = item.subtitle,
-                    onClick = getToolboxOnClick(item.id)
+                    onClick = getToolboxOnClick(item.id, context)
                 )
             }
         }
@@ -80,13 +90,13 @@ private fun getToolboxIcon(id: String): ImageVector = when (id) {
     else -> Icons.Default.Traffic
 }
 
-private fun getToolboxOnClick(id: String): () -> Unit = when (id) {
-    "traffic" -> ({ if (ToolboxModuleSwitch.trafficMonitor) {} })
-    "appUsage" -> ({ if (ToolboxModuleSwitch.appUsage) {} })
-    "networkDiagnosis" -> ({ if (ToolboxModuleSwitch.networkDiagnosis) {} })
-    "dataPlan" -> ({ if (ToolboxModuleSwitch.dataPlan) {} })
-    "deviceInfo" -> ({ if (ToolboxModuleSwitch.deviceInfo) {} })
-    "wifiScan" -> ({ if (ToolboxModuleSwitch.wifiScan) {} })
-    "alertCenter" -> ({ if (ToolboxModuleSwitch.alertCenter) {} })
+private fun getToolboxOnClick(id: String, context: Context): () -> Unit = when (id) {
+    "traffic" -> ({ context.startActivity(Intent(context, TrafficMonitorActivity::class.java)) })
+    "appUsage" -> ({ context.startActivity(Intent(context, AppUsageActivity::class.java)) })
+    "networkDiagnosis" -> ({ context.startActivity(Intent(context, NetworkDiagnosisActivity::class.java)) })
+    "dataPlan" -> ({ context.startActivity(Intent(context, DataPlanActivity::class.java)) })
+    "deviceInfo" -> ({ context.startActivity(Intent(context, DeviceInfoActivity::class.java)) })
+    "wifiScan" -> ({ context.startActivity(Intent(context, WifiScanActivity::class.java)) })
+    "alertCenter" -> ({})
     else -> ({})
 }
