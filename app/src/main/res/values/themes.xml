@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 使用现代的 Material 3 主题，这是动画正常工作的基础 -->
+    <style name="Theme.SecAnalyst" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- 开启 Activity 转换动画 -->
+        <item name="android:windowActivityTransitions">true</item>
+        <!-- 允许窗口内容重叠，使切换更顺滑 -->
+        <item name="android:windowContentTransitions">true</item>
+
+        <!-- 设置默认背景色，防止切换时出现黑屏/闪烁 -->
+        <item name="android:windowBackground">@android:color/transparent</item>
+    </style>
+</resources>
